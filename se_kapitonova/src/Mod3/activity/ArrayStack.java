@@ -63,7 +63,7 @@ public class ArrayStack{
 		//TODO #4: Write decision making code to see if the value of 'count' is 0.  
 		//If true, set the value of 'temp' to null
 
-		if(count == 0) {
+		if(getCount() == 0) {
 			return null;
 		}
 		
@@ -72,7 +72,7 @@ public class ArrayStack{
 		
 		//TODO #5: Write code that will assign to temp, the 
 		//last element pushed into this array
-		temp = stack[count-1];
+		temp = stack[getCount()-1];
 		//END TODO #5
 		
 		return temp;
@@ -162,10 +162,10 @@ public class ArrayStack{
 		//of the array. 
 		//Ex: An element found at the top of the stack will be at position 0
 
-		for (int i = 0; i < count; i++) {
+		for (int i = 0; i < getCount(); i++) {
 			if(element.equals(stack[i])) {
-				int res =  (i + 1 == count) ? 0 : (i + 1) - count;
-				return res < 0 ? res*(-1) : res;
+				int res =  (i + 1 == getCount()) ? 0 : (i + 1) - getCount();
+				return Math.abs(res);
 			}
 		}
 	
