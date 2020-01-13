@@ -1,62 +1,57 @@
 package com.accenture.flowershop.back.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.servlet.http.HttpSession;
-
-import com.accenture.flowershop.back.entity.Item;
-import com.accenture.flowershop.back.model.FlowerModel;
+import com.accenture.flowershop.back.entity.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpSession;
+import java.math.BigDecimal;
 
 @Controller
-@RequestMapping(value = "cart")
 public class CartController {
 
-    @RequestMapping(value = "cart", method = RequestMethod.GET)
-    public String cart() {
-        return "cart";
+    @RequestMapping(value = "/cart", method = RequestMethod.GET)
+    public ModelAndView cart(HttpSession httpSession) {
+        ModelAndView modelAndView = new ModelAndView();
+        SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
+        modelAndView.addObject("cart", sessionAttributes.getCart());
+        modelAndView.setViewName("cart");
+        return modelAndView;
     }
 
-    @RequestMapping(value = "buy/{id}", method = RequestMethod.GET)
-    public String buy(@PathVariable("id") String id, HttpSession session) {
-        FlowerModel productModel = new FlowerModel();
-        if (session.getAttribute("cart") == null) {
-            List<Item> cart = new ArrayList<Item>();
-            cart.add(new Item(productModel.find(id), 1));
-            session.setAttribute("cart", cart);
-        } else {
-            List<Item> cart = (List<Item>) session.getAttribute("cart");
-            int index = this.exists(id, cart);
-            if (index == -1) {
-                cart.add(new Item(productModel.find(id), 1));
-            } else {
-                int quantity = cart.get(index).getQuantity() + 1;
-                cart.get(index).setQuantity(quantity);
-            }
-            session.setAttribute("cart", cart);
+    @RequestMapping(value = "/cart/removeCartItem/{cartItemId}", method = RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public String removeCartItem(@PathVariable(value = "cartItemId") final String cartItemId, HttpSession httpSession) {
+        SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
+        sessionAttributes.getCart().getCartItems().removeIf(e -> e.getProductId().equals(cartItemId));
+        BigDecimal totalPrice = new BigDecimal(0);
+        for(CartItem item : sessionAttributes.getCart().getCartItems()){
+            BigDecimal m = item.getPrice().multiply(new BigDecimal(item.getQuantity()));
+            totalPrice = totalPrice.add(m);
         }
+        sessionAttributes.getCart().setTotalPrice(totalPrice);
+        httpSession.setAttribute("sessionAttributes", sessionAttributes);
         return "redirect:/cart";
     }
 
-    @RequestMapping(value = "remove/{id}", method = RequestMethod.GET)
-    public String remove(@PathVariable("id") String id, HttpSession session) {
-        FlowerModel productModel = new FlowerModel();
-        List<Item> cart = (List<Item>) session.getAttribute("cart");
-        int index = this.exists(id, cart);
-        cart.remove(index);
-        session.setAttribute("cart", cart);
-        return "redirect:/cart";
-    }
-
-    private int exists(String id, List<Item> cart) {
-        for (int i = 0; i < cart.size(); i++) {
-            if (cart.get(i).getFlower().getId().equalsIgnoreCase(id)) {
-                return i;
-            }
+    @RequestMapping(value = "/cart/removeAllItems", method = RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public String removeAllCartItems(HttpSession httpSession) {
+        SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
+        sessionAttributes.getCart().getCartItems().clear();
+        BigDecimal totalPrice = new BigDecimal(0);
+        for(CartItem item : sessionAttributes.getCart().getCartItems()){
+            BigDecimal m = item.getPrice().multiply(new BigDecimal(item.getQuantity()));
+            totalPrice = totalPrice.add(m);
         }
-        return -1;
+        sessionAttributes.getCart().setTotalPrice(totalPrice);
+        httpSession.setAttribute("sessionAttributes", sessionAttributes);
+        return "redirect:/catalog";
     }
 }

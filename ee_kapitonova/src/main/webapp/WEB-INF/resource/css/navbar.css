@@ -1,0 +1,16 @@
+.navbar {
+    display: -webkit-flex;
+    display: flex;
+}
+
+#myNavbar {
+    display: -webkit-flex;
+    display: flex;
+    padding-top: 25px;
+    padding-left: 10px;
+}
+
+.nav-item {
+    flex: 1 1 auto;
+    margin: 5px;
+}
