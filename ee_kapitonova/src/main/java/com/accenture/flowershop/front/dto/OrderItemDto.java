@@ -19,7 +19,8 @@ public class OrderItemDto implements Serializable {
         this.orderItemId = orderItem.getOrderItemId().toString();
         this.quantity = orderItem.getQuantity();
         this.price = orderItem.getPrice();
-        //this.
+        this.productName = orderItem.getProductName();
+        this.productid = orderItem.getProductid();
 
         return this;
     }

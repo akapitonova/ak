@@ -8,6 +8,8 @@ import com.accenture.flowershop.back.entity.Users;
 import com.accenture.flowershop.front.dto.CartDto;
 import com.accenture.flowershop.front.dto.UserDto;
 import com.accenture.flowershop.front.enums.Role;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +24,8 @@ import java.util.List;
 
 @Controller
 public class UserController {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     UserService userService;
@@ -44,30 +48,32 @@ public class UserController {
                                 @RequestParam(value = "j_password", required = false) String pass,
                                 HttpSession httpSession,
                                 HttpServletRequest request) {
-        Users users = userService.getUserByUsername(username);
+        Users user = userService.getUserByUsername(username);
 
-        if (users == null || !users.getPassword().equals(pass)) {
-            request.setAttribute("error", "error");
+        if (user == null || !user.getPassword().equals(pass)) {
+            request.setAttribute("error", "Invalid login or password");
             return "login";
         }
 
         SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
-        sessionAttributes.setUser(new UserDto().entityToDto(users));
+        sessionAttributes.setUser(new UserDto().entityToDto(user));
         httpSession.setAttribute("sessionAttributes", sessionAttributes);
-        httpSession.setAttribute("userName", users.getUserName());
+        httpSession.setAttribute("userName", user.getUserName());
+        logger.info("User "+username+" login successfully");
 
-        return users.getRole().equals(Role.ADMIN) ? "redirect:/admin" : "redirect:/catalog";
+        return user.getRole().equals(Role.ADMIN) ? "redirect:/admin" : "redirect:/catalog";
     }
 
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public String logout(HttpSession httpSession, HttpServletRequest request) {
         SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
+        logger.info("User "+sessionAttributes.getUser().getUserId()+" logout process");
         sessionAttributes.setUser(new UserDto());
         sessionAttributes.setCart(new CartDto());
         httpSession.setAttribute("sessionAttributes", sessionAttributes);
         httpSession.removeAttribute("userName");
 
-        request.setAttribute("logout", "logout");
+        request.setAttribute("logout", "You log out.");
 
         return "login";
     }
@@ -79,11 +85,12 @@ public class UserController {
     }
 
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
-    public String registerUser(@Valid @ModelAttribute(value = "user") Users users, Model model,
+    public String registerUser(@Valid @ModelAttribute(value = "user") Users user, Model model,
                                    BindingResult result) {
         if (result.hasErrors())
             return "redirect:/register";
-        userService.addUser(users);
+        userService.addUser(user);
+        logger.info("Added user " + user.getId() + " " + user.getUserName());
         model.addAttribute("registrationSuccess", "Registered Successfully. Login using username and password");
         return "redirect:/login";
     }
@@ -91,8 +98,8 @@ public class UserController {
     @RequestMapping(value = "/check_user", method = RequestMethod.POST)
     @ResponseBody
     public String checkUser(@RequestParam(value = "username") String username) {
-        Users users = userService.getUserByUsername(username);
-        return users == null ? "null" : "User is already defined";
+        Users user = userService.getUserByUsername(username);
+        return user == null ? "null" : "User is already defined";
     }
 
     @RequestMapping(value = "/userinfo")
@@ -113,12 +120,7 @@ public class UserController {
         if (result.hasErrors())
             return "redirect:/userinfo";
         SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
-        Users user = userService.getUserByUsername(sessionAttributes.getUser().getUserName());
-        user.setFirstName(userDto.getFirstName());
-        user.setLastName(userDto.getLastName());
-        user.setCustomerPhone(userDto.getCustomerPhone());
-        user.setShippingAddress(userDto.getShippingAddress());
-        userService.updateUser(user);
+        Users user = userService.updateUserInfo(sessionAttributes.getUser().getUserName(), userDto);
         sessionAttributes.setUser(new UserDto().entityToDto(user));
         httpSession.setAttribute("sessionAttributes", sessionAttributes);
         return "redirect:/catalog";

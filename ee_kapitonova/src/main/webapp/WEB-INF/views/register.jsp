@@ -10,7 +10,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <script src="http://code.jquery.com/jquery-2.2.4.js" type="text/javascript"></script>
-<script src="/resource/js/reg.js" type="text/javascript"></script>
+<script src="<c:url value="/resource/js/reg.js"/>" type="text/javascript"></script>
 <title>Registration form</title>
 </head>
 <body>
@@ -47,7 +47,7 @@
 						<div>
 							<div>
 								<form:label path="customerPhone">Phone Number</form:label>
-								<form:input type="text" placeholder="Enter Phone Number.."
+								<form:input type="number" placeholder="Enter Phone Number.."
 									path="customerPhone" id="phone"></form:input>
 							</div>
 						</div>
@@ -70,15 +70,12 @@
 
 						<div>
 							<button type="submit"
-								onclick="return Validate()">Submit</button>
+								id="check">Submit</button>
 						</div>
 					</div>
 				</form:form>
 			</div>
 		</div>
 	</div>
-
-	<script type="text/javascript">
-	</script>
 </body>
 </html>

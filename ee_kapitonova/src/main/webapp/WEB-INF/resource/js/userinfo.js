@@ -1,5 +1,5 @@
 $(document).ready(function($) {
-    		function Validate() {
+    $('#check').on('click', function(e) {
     			var firstName = document.getElementById("firstName").value;
     			var lastName = document.getElementById("lastName").value;
     			var phone = document.getElementById("phone").value;
@@ -9,7 +9,7 @@ $(document).ready(function($) {
     				return false;
     			}
     			return true;
-    		};
+    		});
 
     		function isEmpty(str) {
                 return (!str || 0 === str.length);

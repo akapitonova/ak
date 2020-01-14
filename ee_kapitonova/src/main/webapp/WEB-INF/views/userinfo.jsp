@@ -41,7 +41,7 @@
         						<div>
         							<div>
         								<form:label path="customerPhone">Phone Number</form:label>
-        								<form:input type="text" value="${user.customerPhone}"
+        								<form:input type="number" value="${user.customerPhone}"
         									path="customerPhone" id="phone"></form:input>
         							</div>
         						</div>
@@ -52,7 +52,7 @@
         						</div>
         						<div>
         							<button type="submit"
-        								onclick="return Validate()">Change info</button>
+        								onclick="check">Change info</button>
         						</div>
         					</div>
         				</form:form>

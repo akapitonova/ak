@@ -1,9 +1,10 @@
 package com.accenture.flowershop.back.controller;
 
 import com.accenture.flowershop.back.entity.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,6 +16,8 @@ import java.math.BigDecimal;
 
 @Controller
 public class CartController {
+
+    private static final Logger logger = LoggerFactory.getLogger(CartController.class);
 
     @RequestMapping(value = "/cart", method = RequestMethod.GET)
     public ModelAndView cart(HttpSession httpSession) {
@@ -30,12 +33,11 @@ public class CartController {
     public String removeCartItem(@PathVariable(value = "cartItemId") final String cartItemId, HttpSession httpSession) {
         SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
         sessionAttributes.getCart().getCartItems().removeIf(e -> e.getProductId().equals(cartItemId));
-        BigDecimal totalPrice = new BigDecimal(0);
+        double totalPrice = 0.0;
         for(CartItem item : sessionAttributes.getCart().getCartItems()){
-            BigDecimal m = item.getPrice().multiply(new BigDecimal(item.getQuantity()));
-            totalPrice = totalPrice.add(m);
+            totalPrice += item.getPrice().doubleValue() * item.getQuantity();
         }
-        sessionAttributes.getCart().setTotalPrice(totalPrice);
+        sessionAttributes.getCart().setTotalPrice(new BigDecimal(totalPrice));
         httpSession.setAttribute("sessionAttributes", sessionAttributes);
         return "redirect:/cart";
     }
@@ -46,11 +48,8 @@ public class CartController {
         SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
         sessionAttributes.getCart().getCartItems().clear();
         BigDecimal totalPrice = new BigDecimal(0);
-        for(CartItem item : sessionAttributes.getCart().getCartItems()){
-            BigDecimal m = item.getPrice().multiply(new BigDecimal(item.getQuantity()));
-            totalPrice = totalPrice.add(m);
-        }
         sessionAttributes.getCart().setTotalPrice(totalPrice);
+        logger.info("Cart cleared for user "+sessionAttributes.getUser().getUserId());
         httpSession.setAttribute("sessionAttributes", sessionAttributes);
         return "redirect:/catalog";
     }

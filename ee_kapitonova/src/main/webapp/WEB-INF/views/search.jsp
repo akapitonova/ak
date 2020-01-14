@@ -10,13 +10,12 @@
 <body>
 	<%@ include file="navbar.jsp"%>
 	<form action="<c:url value="/search/"/>">
-         <p><input class="search-input" type="search" name="searchParam" placeholder="Enter product name or price range">
-          <input type="submit" value="Search"></p>
+             <p><input class="search-input" type="search" name="searchParam" placeholder="Enter product name or price range">
+              <input type="submit" value="Search"></p>
      </form>
-	<c:if test="${not empty payOrderSuccess}">
-    	<div style="color: #ff0000;">${payOrderSuccess}</div>
-    </c:if>
-	<h3>Catalog Page</h3>
+    <c:choose>
+    <c:when test="${not empty products}">
+	<h3> <c:out value="${results}"/></h3>
 	<table cellpadding="2" cellspacing="2" border="1">
 		<tr>
 			<th>Name</th>
@@ -34,7 +33,7 @@
 				<td >${product.storeqty }</td>
 				<td>
 				    <input class="qty-input" name="<c:out value="${product.productId}"/>" data-qty="${product.storeqty}"
-				    type="number" min="0" max="<c:out value="${product.storeqty}"/>" value="1">
+				    type="number" min="0" max="<c:out value="${product.storeqty}"/>" value="1" width="50px">
 				</td>
 				<td align="center">
 				    <button id="<c:out value="${product.productId}"/>">Buy</button>
@@ -42,5 +41,13 @@
 			</tr>
 		</c:forEach>
 	</table>
+	</c:when>
+	<c:when test="${not empty noResults}">
+	    <h3> <c:out value="${noResults}"/></h3>
+	</c:when>
+    	<c:otherwise>
+    	    <h3> No search results</h3>
+    	</c:otherwise>
+    </c:choose>
 </body>
 </html>

@@ -2,6 +2,7 @@ package com.accenture.flowershop.back.business.service;
 
 import com.accenture.flowershop.back.business.dao.UserDao;
 import com.accenture.flowershop.back.entity.Users;
+import com.accenture.flowershop.front.dto.UserDto;
 import com.accenture.flowershop.front.enums.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,5 +43,22 @@ public class UserServiceImpl implements UserService {
 
 	public void updateUser(Users user) {
 		userDao.updateUser(user);
+	}
+
+	public void updateUserBalance(String username, BigDecimal summ) {
+		Users user = getUserByUsername(username);
+		user.setBalance(user.getBalance().add(summ));
+		updateUser(user);
+	}
+
+	public Users updateUserInfo(String userName, UserDto userDto) {
+		Users user = getUserByUsername(userName);
+		user.setFirstName(userDto.getFirstName());
+		user.setLastName(userDto.getLastName());
+		user.setCustomerPhone(userDto.getCustomerPhone());
+		user.setShippingAddress(userDto.getShippingAddress());
+		updateUser(user);
+
+		return user;
 	}
 }

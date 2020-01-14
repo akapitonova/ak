@@ -14,3 +14,11 @@
     flex: 1 1 auto;
     margin: 5px;
 }
+
+.search-input {
+    width: 230px;
+}
+
+.qty-input {
+    width: 50px;
+}

@@ -1,6 +1,7 @@
 package com.accenture.flowershop.back.business.dao;
 
 import com.accenture.flowershop.back.entity.Users;
+import com.accenture.flowershop.front.enums.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -26,7 +27,8 @@ public class UserDaoImpl implements UserDao {
 	public List<Users> getAllUsers() {
 		List<Users> users = new ArrayList<>();
 		try {
-			users = em.createQuery("SELECT t FROM " + Users.class.getName() + " t").getResultList();
+			users = em.createQuery("SELECT t FROM " + Users.class.getName() + " t WHERE t.role <> :role")
+					.setParameter("role", Role.ADMIN).getResultList();
 		} catch (Exception e) {
 			logger.error("Get users throw some error: " + e);
 			users = new ArrayList<>();

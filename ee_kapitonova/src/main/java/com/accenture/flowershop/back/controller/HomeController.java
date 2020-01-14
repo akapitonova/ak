@@ -6,6 +6,7 @@ import com.accenture.flowershop.back.business.service.UserService;
 import com.accenture.flowershop.back.entity.*;
 import com.accenture.flowershop.back.entity.SessionAttributes;
 import com.accenture.flowershop.front.dto.CartDto;
+import com.accenture.flowershop.front.dto.ProductDto;
 import com.accenture.flowershop.front.dto.UserDto;
 import com.accenture.flowershop.front.enums.Role;
 import org.slf4j.Logger;
@@ -19,9 +20,8 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class HomeController {
@@ -39,6 +39,7 @@ public class HomeController {
 
     @RequestMapping(value = {"/", "/catalog"}, method = RequestMethod.GET)
     public ModelAndView main(HttpSession httpSession) {
+        logger.info("Start point of app");
         ModelAndView modelAndView = new ModelAndView();
         if (httpSession.getAttribute("sessionAttributes") == null) {
             SessionAttributes sessionAttributes = new SessionAttributes();
@@ -49,14 +50,41 @@ public class HomeController {
             httpSession.setAttribute("sessionAttributes", sessionAttributes);
             httpSession.setAttribute("userName", null);
         }
-        modelAndView.addObject("products", productService.getProductList());
+        modelAndView.addObject("products", productService.getProductList().stream().map(p -> new ProductDto().entityToDto(p)).collect(Collectors.toList()));
         modelAndView.setViewName("catalog");
         return modelAndView;
     }
 
-    @RequestMapping(value = "buy/{id}")
+    @RequestMapping(value = "/search")
+    public ModelAndView search(@RequestParam(value = "searchParam", required = false) String searchParam, HttpSession httpSession) {
+        logger.info("Search param "+searchParam);
+        ModelAndView modelAndView = new ModelAndView();
+        List<Product> products = new ArrayList<>();
+        if (Objects.nonNull(searchParam)) {
+            if (searchParam.matches("[a-zA-Z]+")) {
+                products = productService.searchProductsByName(searchParam);
+                modelAndView.addObject("products", products.stream().map(p -> new ProductDto().entityToDto(p)).collect(Collectors.toList()));
+                modelAndView.addObject("results", "Results for "+searchParam);
+            } else if (searchParam.matches("([0-9]*\\)*\\(*\\s*)+") && searchParam.split(" ").length > 1) {
+                String minParam = searchParam.split(" ")[0];
+                String maxParam = searchParam.split(" ")[1];
+                products = productService.searchProductsByPriceRange(minParam, maxParam);
+                modelAndView.addObject("products", products.stream().map(p -> new ProductDto().entityToDto(p)).collect(Collectors.toList()));
+                modelAndView.addObject("results", "Results for range "+searchParam);
+            } else {
+                modelAndView.addObject("noResults", "The query "+searchParam+" returned no results");
+            }
+        }
+
+        modelAndView.setViewName("search");
+        return modelAndView;
+    }
+
+    @RequestMapping(value = "/buy")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void addCartItem(@PathVariable(value = "id") String productId, HttpSession httpSession) {
+    public void addCartItem(HttpServletRequest request, HttpSession httpSession) {
+        String productId = request.getParameter("productId");
+        String productQty = request.getParameter("productQty");
         Product product = productService.findProduct(productId);
         SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
         Cart cart = sessionAttributes.getCart().dtoToEntity();
@@ -74,12 +102,11 @@ public class HomeController {
             cartItems = cart.getCartItems();
         }
         if (Objects.nonNull(cartItem) && Objects.nonNull(cartItem.getProductId())) {
-            cartItem.setQuantity(cartItem.getQuantity() + 1);
+            cartItem.setQuantity(cartItem.getQuantity() + Integer.valueOf(productQty));
             cart.getCartItems().set(cart.getCartItems().indexOf(cartItem), cartItem);
         } else {
             cartItem = new CartItem();
-            Integer qty = 1;
-            cartItem.setQuantity(qty);
+            cartItem.setQuantity(Integer.valueOf(productQty));
             cartItem.setProductId(product.getId());
             cartItem.setProductName(product.getName());
             cartItem.setPrice(product.getPrice());
@@ -87,12 +114,11 @@ public class HomeController {
             cartItems.add(cartItem);
             cart.setCartItems(cartItems);
         }
-        BigDecimal totalPrice = new BigDecimal(0);
-        for(CartItem item : cartItems){
-            BigDecimal m = item.getPrice().multiply(new BigDecimal(item.getQuantity()));
-            totalPrice = totalPrice.add(m);
+        double totalPrice = 0.0;
+        for(CartItem item : cartItems) {
+            totalPrice += item.getPrice().doubleValue() * item.getQuantity();
         }
-        cart.setTotalPrice(totalPrice);
+        cart.setTotalPrice(new BigDecimal(totalPrice));
         CartDto cartDto = new CartDto();
         sessionAttributes.setCart(cartDto.entityToDto(cart));
         httpSession.setAttribute("sessionAttributes", sessionAttributes);
@@ -111,6 +137,7 @@ public class HomeController {
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void closeOrder(@PathVariable(value = "orderId") String orderId) {
         customerOrderService.closeCustomerOrder(orderId);
+        logger.info("Order "+orderId+" closed successfully");
     }
 
     @RequestMapping(value = "/admin/addMoney/{userId}", method = RequestMethod.GET)
@@ -125,10 +152,8 @@ public class HomeController {
     @RequestMapping(value = "/addmoney_process", method = RequestMethod.POST)
     public String addmoney_process(@RequestParam(value = "j_username") String username,
                                 @RequestParam(value = "j_summ", required = false) BigDecimal summ) {
-        Users user = userService.getUserByUsername(username);
-        user.setBalance(user.getBalance().add(summ));
-        userService.updateUser(user);
-
+        userService.updateUserBalance(username, summ);
         return "redirect:/admin";
     }
+
 }

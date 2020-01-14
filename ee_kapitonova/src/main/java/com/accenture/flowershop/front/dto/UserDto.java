@@ -1,6 +1,7 @@
 package com.accenture.flowershop.front.dto;
 
 import com.accenture.flowershop.back.entity.Users;
+import com.accenture.flowershop.front.enums.Role;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -14,6 +15,7 @@ public class UserDto implements Serializable {
     private String lastName;
     private String customerPhone;
     private String shippingAddress;
+    private Role role;
     private BigDecimal balance;
     private BigDecimal discount;
 
@@ -24,6 +26,7 @@ public class UserDto implements Serializable {
         this.lastName = users.getLastName();
         this.customerPhone = users.getCustomerPhone();
         this.shippingAddress = users.getShippingAddress();
+        this.role = users.getRole();
         this.balance = users.getBalance();
         this.discount = users.getDiscount();
 
@@ -94,5 +97,11 @@ public class UserDto implements Serializable {
         this.discount = discount;
     }
 
+    public Role getRole() {
+        return role;
+    }
 
+    public void setRole(Role role) {
+        this.role = role;
+    }
 }

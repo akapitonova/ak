@@ -3099,3 +3099,13 @@ Caused by: java.lang.IllegalStateException: The file is locked: nio:C:/Users/ana
 	at org.h2.mvstore.FileStore.open(FileStore.java:172)
 	at org.h2.mvstore.MVStore.<init>(MVStore.java:342)
 	... 80 more
+2020-01-14 18:09:43 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM USERS U WHERE U.USERNAME = 'admin')[*]; "; SQL statement:
+select * from users u where u.username = 'admin'); [42000-199]
+2020-01-14 18:09:43 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: The object is already closed [90007-199]
+2020-01-14 18:10:11 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM USERS U WHERE U.USERNAME = 'admin')[*]; "; SQL statement:
+select * from users u where u.username = 'admin'); [42000-199]
+2020-01-14 18:10:11 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLNonTransientException: The object is already closed [90007-199]
