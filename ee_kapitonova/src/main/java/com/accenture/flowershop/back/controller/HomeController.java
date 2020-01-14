@@ -80,6 +80,21 @@ public class HomeController {
         return modelAndView;
     }
 
+    @RequestMapping(value = "/get_quantity_in_cart", method = RequestMethod.POST)
+    @ResponseBody
+    public String checkQtyInCart(HttpServletRequest request, HttpSession httpSession) {
+        SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
+        String productId = request.getParameter("productId");
+        CartDto cartDto = sessionAttributes.getCart();
+        CartItem cartItem = null;
+        if (Objects.nonNull(cartDto.getCartItems())) {
+            cartItem = cartDto.getCartItems().stream()
+                    .filter(item -> item.getProductId().equals(productId))
+                    .findFirst().orElse(null);
+        }
+        return Objects.nonNull(cartItem) ? String.valueOf(cartItem.getQuantity()) : String.valueOf(0);
+    }
+
     @RequestMapping(value = "/buy")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void addCartItem(HttpServletRequest request, HttpSession httpSession) {
