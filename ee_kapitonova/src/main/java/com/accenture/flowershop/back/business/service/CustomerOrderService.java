@@ -1,7 +1,6 @@
 package com.accenture.flowershop.back.business.service;
 
 import com.accenture.flowershop.back.entity.CustomerOrder;
-import com.accenture.flowershop.back.entity.OrderItem;
 
 import java.util.List;
 

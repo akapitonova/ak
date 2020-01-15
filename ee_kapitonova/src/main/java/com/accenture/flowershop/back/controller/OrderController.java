@@ -6,7 +6,6 @@ import com.accenture.flowershop.back.entity.*;
 import com.accenture.flowershop.front.dto.CartDto;
 import com.accenture.flowershop.front.dto.CustomerOrderDto;
 import com.accenture.flowershop.front.dto.UserDto;
-import com.accenture.flowershop.front.enums.Role;
 import com.accenture.flowershop.front.enums.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +15,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.util.ArrayList;

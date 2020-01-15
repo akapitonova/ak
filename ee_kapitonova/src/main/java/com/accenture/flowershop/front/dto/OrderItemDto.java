@@ -1,6 +1,5 @@
 package com.accenture.flowershop.front.dto;
 
-import com.accenture.flowershop.back.entity.Cart;
 import com.accenture.flowershop.back.entity.OrderItem;
 
 import java.io.Serializable;

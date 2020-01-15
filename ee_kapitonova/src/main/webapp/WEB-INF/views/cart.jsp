@@ -6,6 +6,8 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<script src="http://code.jquery.com/jquery-2.2.4.js" type="text/javascript"></script>
+<script src="<c:url value="/resource/js/cart.js"/>" type="text/javascript"></script>
 <title>Cart</title>
 </head>
 <body>
@@ -40,7 +42,9 @@
 							<td>${cartItem.quantity}</td>
 							<td>${cartItem.price}</td>
 							<td>${cartItem.price * cartItem.quantity}</td>
-							<td><a href="<c:url value="/cart/removeCartItem/${cartItem.productId}"/>">remove</a></td>
+							<td>
+							    <button class="removeButton" id="<c:out value="${cartItem.productId}"/>">remove</button>
+							</td>
 						</tr>
 					</c:forEach>
 					</tbody>

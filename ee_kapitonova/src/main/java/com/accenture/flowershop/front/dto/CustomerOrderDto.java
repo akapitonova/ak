@@ -2,7 +2,6 @@ package com.accenture.flowershop.front.dto;
 
 import com.accenture.flowershop.back.entity.CustomerOrder;
 import com.accenture.flowershop.back.entity.OrderItem;
-import com.accenture.flowershop.back.entity.Users;
 import com.accenture.flowershop.front.enums.Status;
 
 import java.io.Serializable;

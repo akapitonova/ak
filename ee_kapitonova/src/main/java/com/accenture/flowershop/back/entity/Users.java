@@ -1,10 +1,8 @@
 package com.accenture.flowershop.back.entity;
 
 import com.accenture.flowershop.front.enums.Role;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
 

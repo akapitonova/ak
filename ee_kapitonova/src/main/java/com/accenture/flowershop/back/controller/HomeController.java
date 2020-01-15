@@ -8,7 +8,6 @@ import com.accenture.flowershop.back.entity.SessionAttributes;
 import com.accenture.flowershop.front.dto.CartDto;
 import com.accenture.flowershop.front.dto.ProductDto;
 import com.accenture.flowershop.front.dto.UserDto;
-import com.accenture.flowershop.front.enums.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

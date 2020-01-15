@@ -2,7 +2,6 @@ package com.accenture.flowershop.back.business.service;
 
 import com.accenture.flowershop.back.business.dao.CustomerOrderDao;
 import com.accenture.flowershop.back.entity.CustomerOrder;
-import com.accenture.flowershop.back.entity.OrderItem;
 import com.accenture.flowershop.front.enums.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

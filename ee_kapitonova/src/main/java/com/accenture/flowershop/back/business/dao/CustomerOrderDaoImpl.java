@@ -1,7 +1,6 @@
 package com.accenture.flowershop.back.business.dao;
 
 import com.accenture.flowershop.back.entity.CustomerOrder;
-import com.accenture.flowershop.back.entity.OrderItem;
 import com.accenture.flowershop.front.enums.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -5,12 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
 
@@ -28,9 +28,10 @@ public class CartController {
         return modelAndView;
     }
 
-    @RequestMapping(value = "/cart/removeCartItem/{cartItemId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/cart/removeCartItem", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public String removeCartItem(@PathVariable(value = "cartItemId") final String cartItemId, HttpSession httpSession) {
+    public void removeCartItem(HttpServletRequest request, HttpSession httpSession) {
+        String cartItemId = request.getParameter("cartItemId");
         SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
         sessionAttributes.getCart().getCartItems().removeIf(e -> e.getProductId().equals(cartItemId));
         double totalPrice = 0.0;
@@ -39,7 +40,6 @@ public class CartController {
         }
         sessionAttributes.getCart().setTotalPrice(new BigDecimal(totalPrice));
         httpSession.setAttribute("sessionAttributes", sessionAttributes);
-        return "redirect:/cart";
     }
 
     @RequestMapping(value = "/cart/removeAllItems", method = RequestMethod.GET)
