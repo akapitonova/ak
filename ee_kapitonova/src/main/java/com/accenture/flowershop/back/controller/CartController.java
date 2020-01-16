@@ -42,15 +42,14 @@ public class CartController {
         httpSession.setAttribute("sessionAttributes", sessionAttributes);
     }
 
-    @RequestMapping(value = "/cart/removeAllItems", method = RequestMethod.GET)
+    @RequestMapping(value = "/cart/removeAllItems", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public String removeAllCartItems(HttpSession httpSession) {
+    public void removeAllCartItems(HttpSession httpSession) {
         SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
         sessionAttributes.getCart().getCartItems().clear();
         BigDecimal totalPrice = new BigDecimal(0);
         sessionAttributes.getCart().setTotalPrice(totalPrice);
         logger.info("Cart cleared for user "+sessionAttributes.getUser().getUserId());
         httpSession.setAttribute("sessionAttributes", sessionAttributes);
-        return "redirect:/catalog";
     }
 }

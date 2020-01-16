@@ -6,7 +6,6 @@ import com.accenture.flowershop.back.entity.*;
 import com.accenture.flowershop.front.dto.CartDto;
 import com.accenture.flowershop.front.dto.CustomerOrderDto;
 import com.accenture.flowershop.front.dto.UserDto;
-import com.accenture.flowershop.front.enums.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 
 @Controller
@@ -37,34 +33,16 @@ public class OrderController {
     public String createOrder(HttpSession httpSession, Model model) {
         SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
         Users user = userService.getUserByUsername(sessionAttributes.getUser().getUserName());
-        CustomerOrder customerOrder = new CustomerOrder();
-        customerOrder.setUser(user);
-        customerOrder.setStatus(Status.CREATED);
-        customerOrder.setOpenDate(new Date());
-        Cart cart = sessionAttributes.getCart().dtoToEntity();
-        customerOrder.setTotal(cart.getTotalPrice());
-        List<OrderItem> orderItems = new ArrayList<OrderItem>();
-        for (CartItem cartItem : cart.getCartItems()) {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setProductid(cartItem.getProductId());
-            orderItem.setProductName(cartItem.getProductName());
-            orderItem.setPrice(cartItem.getPrice());
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setCustomerOrder(customerOrder);
-            orderItems.add(orderItem);
-        }
-        customerOrder.setOrderItems(orderItems);
-        customerOrderService.addCustomerOrder(customerOrder);
+        CustomerOrder customerOrder = customerOrderService.createCustomerAndAddOrder(sessionAttributes.getCart().dtoToEntity(), user.getUserName());
         sessionAttributes.setCart(new CartDto());
-
         httpSession.setAttribute("sessionAttributes", sessionAttributes);
         model.addAttribute("user", new UserDto().entityToDto(user));
         model.addAttribute("order", new CustomerOrderDto().entityToDto(customerOrder));
         if(Objects.nonNull(user.getDiscount())) {
-            double discountSumm = customerOrder.getTotal().doubleValue() - customerOrder.getTotal().doubleValue() / 100.0 * user.getDiscount().intValue();
+            BigDecimal discountSumm = calculateDiscountSum(customerOrder, user.getDiscount());
             model.addAttribute("totalDiscount", discountSumm);
         } else {
-            model.addAttribute("totalDiscount", customerOrder.getTotal().doubleValue());
+            model.addAttribute("totalDiscount", customerOrder.getTotal());
         }
 
         return "/order";
@@ -79,10 +57,10 @@ public class OrderController {
         model.addAttribute("user", new UserDto().entityToDto(user));
         model.addAttribute("order", new CustomerOrderDto().entityToDto(customerOrder));
         if(Objects.nonNull(user.getDiscount())) {
-            double discountSumm = customerOrder.getTotal().doubleValue() - customerOrder.getTotal().doubleValue() / 100.0 * user.getDiscount().intValue();
+            BigDecimal discountSumm = calculateDiscountSum(customerOrder, user.getDiscount());
             model.addAttribute("totalDiscount", discountSumm);
         } else {
-            model.addAttribute("totalDiscount", customerOrder.getTotal().doubleValue());
+            model.addAttribute("totalDiscount", customerOrder.getTotal());
         }
 
         return "/order";
@@ -93,17 +71,19 @@ public class OrderController {
         SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
         Users user = userService.getUserByUsername(sessionAttributes.getUser().getUserName());
         CustomerOrder customerOrder = customerOrderService.getCustomerOrderById(orderId);
-        double newBalance = 0.0;
+        BigDecimal newBalance = new BigDecimal(0);
         if(Objects.nonNull(user.getDiscount())) {
-            double discountSumm = customerOrder.getTotal().doubleValue() - customerOrder.getTotal().doubleValue() / 100.0 * user.getDiscount().intValue();
-            newBalance = user.getBalance().doubleValue() - discountSumm;
+            BigDecimal discountSumm = calculateDiscountSum(customerOrder, user.getDiscount());
+            newBalance = user.getBalance().subtract(discountSumm);
             user.setDiscount(null);
         } else {
-            newBalance = user.getBalance().doubleValue() - customerOrder.getTotal().doubleValue();
+            newBalance = user.getBalance().subtract(customerOrder.getTotal());
         }
-        user.setBalance(new BigDecimal(newBalance));
+        user.setBalance(newBalance);
         customerOrderService.payCustomerOrder(orderId);
         userService.updateUser(user);
+        sessionAttributes.setUser(new UserDto().entityToDto(user));
+        httpSession.setAttribute("sessionAttributes", sessionAttributes);
         model.addAttribute("payOrderSuccess", "Your order payed successfully");
 
         return "redirect:/catalog";
@@ -114,5 +94,9 @@ public class OrderController {
         customerOrderService.cancelOrder(orderId);
         logger.info("Order "+orderId+" canceled successfully");
         return "redirect:/catalog";
+    }
+
+    private BigDecimal calculateDiscountSum(CustomerOrder customerOrder, BigDecimal discount) {
+        return customerOrder.getTotal().subtract(customerOrder.getTotal().divide(new BigDecimal(100)).multiply(discount));
     }
 }

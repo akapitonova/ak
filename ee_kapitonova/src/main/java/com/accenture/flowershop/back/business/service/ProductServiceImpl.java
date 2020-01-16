@@ -19,12 +19,8 @@ public class ProductServiceImpl implements ProductService {
         return productDao.getProductList();
     }
 
-    public List<Product> searchProductsByPriceRange(String minPrice, String maxPrice) {
-        return productDao.searchProductsByPriceRange(minPrice, maxPrice);
-    }
-
-    public List<Product> searchProductsByName(String productName) {
-        return productDao.searchProductsByName(productName);
+    public List<Product> searchProducts(String name, String minPrice, String maxPrice) {
+        return productDao.searchProducts(name, minPrice, maxPrice);
     }
 
     public Product findProduct(String productId) {

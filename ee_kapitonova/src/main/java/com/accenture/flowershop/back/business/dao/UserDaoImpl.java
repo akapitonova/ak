@@ -2,6 +2,7 @@ package com.accenture.flowershop.back.business.dao;
 
 import com.accenture.flowershop.back.entity.Users;
 import com.accenture.flowershop.front.enums.Role;
+import org.h2.engine.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -21,16 +22,18 @@ public class ProductDaoImpl implements ProductDao {
         return productList;
     }
 
-    public List<Product> searchProductsByName(String name) {
-        List<Product> productList = em.createQuery("SELECT t FROM "+Product.class.getName()+" t WHERE t.name LIKE :name")
+    public List<Product> searchProducts(String name, String minPrice, String maxPrice) {
+        List<Product> productList = new ArrayList<>();
+        String query = "SELECT t FROM " + Product.class.getName() + " t WHERE t.name LIKE :name AND t.price >= :minPrice" +
+                " AND t.price <= :maxPrice";
+        if (minPrice.isEmpty()) {
+            minPrice = "0";
+        }
+        if (maxPrice.isEmpty()) {
+            maxPrice = em.createQuery("SELECT MAX(t.price) FROM " + Product.class.getName() +" t").getSingleResult().toString();
+        }
+        productList = em.createQuery(query)
                 .setParameter("name", "%"+name+"%")
-                .getResultList();
-        return productList;
-    }
-
-    public List<Product> searchProductsByPriceRange(String minPrice, String maxPrice) {
-        List<Product> productList = em.createQuery("SELECT t FROM "+Product.class.getName()+" t WHERE t.price >= :minPrice " +
-                "AND t.price <= :maxPrice")
                 .setParameter("minPrice", new BigDecimal(minPrice))
                 .setParameter("maxPrice", new BigDecimal(maxPrice))
                 .getResultList();
@@ -40,5 +43,4 @@ public class ProductDaoImpl implements ProductDao {
     public Product findProduct(String productId) {
         return em.find(Product.class, productId);
     }
-
 }

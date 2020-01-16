@@ -6,7 +6,6 @@ import java.util.List;
 
 public interface ProductDao {
     List<Product> getProductList();
-    List<Product> searchProductsByName(String productName);
-    List<Product> searchProductsByPriceRange(String minPrice, String maxPrice);
+    List<Product> searchProducts(String name, String minPrice, String maxPrice);
     Product findProduct(String productId);
 }

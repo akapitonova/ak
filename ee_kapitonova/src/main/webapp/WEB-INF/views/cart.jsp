@@ -18,13 +18,15 @@
 		<c:when test="${not empty cart.cartItems}">
 			<div>
 				<br> List of Products Purchased
-				<div>
-					<a href="<c:url value="/cart/removeAllItems"/>" >Clear Cart </a>
-				</div>
-				<div>
-					<c:url value="/order" var="url1"></c:url>
-					<a href="${url1}">Check Out </a>
-				</div>
+				<p>
+                    <div>
+                        <button class="removeAllButton">Clear Cart</button>
+                    </div>
+                    <div>
+                        <c:url value="/order" var="url1"></c:url>
+                        <a href="${url1}">Check Out </a>
+                    </div>
+				</p>
 				<table id="productList" cellpadding="2" cellspacing="2" border="1">
 					<thead>
 						<tr>

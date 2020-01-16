@@ -10,8 +10,10 @@
 <body>
 	<%@ include file="navbar.jsp"%>
 	<form action="<c:url value="/search/"/>">
-             <p><input class="search-input" type="search" name="searchParam" placeholder="Enter product name or price range">
-              <input type="submit" value="Search"></p>
+         <p><input class="search-input" type="search" name="searchParam" placeholder="Enter product name">
+          Select price range <input class="range" type="number" name="minParam">
+          <input class="range" type="number" name="maxParam">
+          <input type="submit" value="Search"></p>
      </form>
     <c:choose>
     <c:when test="${not empty products}">

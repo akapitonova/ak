@@ -1,5 +1,6 @@
 package com.accenture.flowershop.back.controller;
 
+import com.accenture.flowershop.back.business.service.CartService;
 import com.accenture.flowershop.back.business.service.CustomerOrderService;
 import com.accenture.flowershop.back.business.service.ProductService;
 import com.accenture.flowershop.back.business.service.UserService;
@@ -36,6 +37,9 @@ public class HomeController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private CartService cartService;
+
     @RequestMapping(value = {"/", "/catalog"}, method = RequestMethod.GET)
     public ModelAndView main(HttpSession httpSession) {
         logger.info("Start point of app");
@@ -48,31 +52,40 @@ public class HomeController {
             sessionAttributes.setCart(cart);
             httpSession.setAttribute("sessionAttributes", sessionAttributes);
             httpSession.setAttribute("userName", null);
+            modelAndView.setViewName("redirect:/login");
+        } else if (((SessionAttributes) httpSession.getAttribute("sessionAttributes")).getUser().getUserId() == null) {
+            modelAndView.setViewName("redirect:/login");
+        } else {
+            modelAndView.addObject("products", productService.getProductList().stream().map(p -> new ProductDto().entityToDto(p)).collect(Collectors.toList()));
+            modelAndView.setViewName("catalog");
         }
-        modelAndView.addObject("products", productService.getProductList().stream().map(p -> new ProductDto().entityToDto(p)).collect(Collectors.toList()));
-        modelAndView.setViewName("catalog");
         return modelAndView;
     }
 
     @RequestMapping(value = "/search")
-    public ModelAndView search(@RequestParam(value = "searchParam", required = false) String searchParam, HttpSession httpSession) {
+    public ModelAndView search(@RequestParam(value = "searchParam", required = false) String searchParam,
+                               @RequestParam(value = "minParam", required = false) String minParam,
+                               @RequestParam(value = "maxParam", required = false) String maxParam,
+                               HttpSession httpSession) {
         logger.info("Search param "+searchParam);
         ModelAndView modelAndView = new ModelAndView();
         List<Product> products = new ArrayList<>();
-        if (Objects.nonNull(searchParam)) {
-            if (searchParam.matches("[a-zA-Z]+")) {
-                products = productService.searchProductsByName(searchParam);
-                modelAndView.addObject("products", products.stream().map(p -> new ProductDto().entityToDto(p)).collect(Collectors.toList()));
-                modelAndView.addObject("results", "Results for "+searchParam);
-            } else if (searchParam.matches("([0-9]*\\)*\\(*\\s*)+") && searchParam.split(" ").length > 1) {
-                String minParam = searchParam.split(" ")[0];
-                String maxParam = searchParam.split(" ")[1];
-                products = productService.searchProductsByPriceRange(minParam, maxParam);
-                modelAndView.addObject("products", products.stream().map(p -> new ProductDto().entityToDto(p)).collect(Collectors.toList()));
-                modelAndView.addObject("results", "Results for range "+searchParam);
-            } else {
-                modelAndView.addObject("noResults", "The query "+searchParam+" returned no results");
-            }
+
+        if (searchParam.isEmpty() && minParam.isEmpty() && maxParam.isEmpty()) {
+            modelAndView.addObject("products", productService.getProductList().stream().map(p -> new ProductDto().entityToDto(p)).collect(Collectors.toList()));
+        } else {
+            products.addAll(productService.searchProducts(searchParam, minParam, maxParam));
+        }
+
+        if (products.isEmpty()) {
+            modelAndView.addObject("noResults", "The query " + searchParam + " " + minParam + " " + maxParam + " returned no results");
+        } else {
+            modelAndView.addObject("products", products.stream().map(p -> new ProductDto().entityToDto(p)).collect(Collectors.toList()));
+            String responseString = "Results for ";
+            responseString += !searchParam.isEmpty() ?  searchParam : "";
+            responseString += !minParam.isEmpty() ? " minPrice " + minParam : "";
+            responseString += !maxParam.isEmpty() ? " maxPrice " + maxParam : "";
+            modelAndView.addObject("results", responseString);
         }
 
         modelAndView.setViewName("search");
@@ -99,42 +112,10 @@ public class HomeController {
     public void addCartItem(HttpServletRequest request, HttpSession httpSession) {
         String productId = request.getParameter("productId");
         String productQty = request.getParameter("productQty");
-        Product product = productService.findProduct(productId);
         SessionAttributes sessionAttributes = (SessionAttributes) httpSession.getAttribute("sessionAttributes");
-        Cart cart = sessionAttributes.getCart().dtoToEntity();
-        if(Objects.isNull(cart)) {
-            cart = new Cart();
-        }
         logger.info("Customer : " + sessionAttributes.getUser().getUserId() + " "+ sessionAttributes.getUser().getUserName());
-        logger.info("Cart : "+cart.getCartId());
-        List<CartItem> cartItems = new ArrayList<CartItem>();
-        CartItem cartItem = new CartItem();
-        if (Objects.nonNull(cart.getCartItems())) {
-            cartItem = cart.getCartItems().stream()
-                    .filter(item -> item.getProductId().equals(product.getId()))
-                    .findFirst().orElse(null);
-            cartItems = cart.getCartItems();
-        }
-        if (Objects.nonNull(cartItem) && Objects.nonNull(cartItem.getProductId())) {
-            cartItem.setQuantity(cartItem.getQuantity() + Integer.valueOf(productQty));
-            cart.getCartItems().set(cart.getCartItems().indexOf(cartItem), cartItem);
-        } else {
-            cartItem = new CartItem();
-            cartItem.setQuantity(Integer.valueOf(productQty));
-            cartItem.setProductId(product.getId());
-            cartItem.setProductName(product.getName());
-            cartItem.setPrice(product.getPrice());
-            cartItem.setCart(cart);
-            cartItems.add(cartItem);
-            cart.setCartItems(cartItems);
-        }
-        double totalPrice = 0.0;
-        for(CartItem item : cartItems) {
-            totalPrice += item.getPrice().doubleValue() * item.getQuantity();
-        }
-        cart.setTotalPrice(new BigDecimal(totalPrice));
-        CartDto cartDto = new CartDto();
-        sessionAttributes.setCart(cartDto.entityToDto(cart));
+        Cart cart = cartService.addItemToCart(sessionAttributes.getCart().dtoToEntity(), productId, productQty);
+        sessionAttributes.setCart(new CartDto().entityToDto(cart));
         httpSession.setAttribute("sessionAttributes", sessionAttributes);
     }
 
@@ -169,5 +150,4 @@ public class HomeController {
         userService.updateUserBalance(username, summ);
         return "redirect:/admin";
     }
-
 }
