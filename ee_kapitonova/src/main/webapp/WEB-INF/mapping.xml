@@ -1,0 +1,14 @@
+<mapping>
+    <class name="com.accenture.flowershop.front.jms.DiscountObject">
+
+        <map-to xml="discountObject"/>
+
+        <field name="id" type="long">
+            <bind-xml name="id" node="element" />
+        </field>
+
+        <field name="discount" type="integer">
+            <bind-xml name="discount" node="element" />
+        </field>
+    </class>
+</mapping>

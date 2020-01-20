@@ -3,9 +3,11 @@ package com.accenture.flowershop.back.entity;
 import com.accenture.flowershop.front.enums.Role;
 
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.math.BigDecimal;
 import java.util.List;
 
+@XmlRootElement
 @Entity
 @Table(name = "users")
 public class Users {

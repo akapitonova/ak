@@ -43,4 +43,12 @@ public class ProductDaoImpl implements ProductDao {
     public Product findProduct(String productId) {
         return em.find(Product.class, productId);
     }
+
+    public void increaseStockSize(int count) {
+        List<Product> products = getProductList();
+        for(Product product : products) {
+            product.setStoreqty(product.getStoreqty()+count);
+            em.merge(product);
+        }
+    }
 }

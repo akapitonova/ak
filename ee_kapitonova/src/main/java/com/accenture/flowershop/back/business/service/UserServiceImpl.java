@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	public void addUser(Users users){
 		users.setBalance(new BigDecimal(2000.0));
-		users.setDiscount(new BigDecimal(3.0));
+		//users.setDiscount(new BigDecimal(3.0));
 		users.setRole(Role.USER);
 		userDao.addUser(users);
 	}
@@ -60,5 +60,11 @@ public class UserServiceImpl implements UserService {
 		updateUser(user);
 
 		return user;
+	}
+
+	public void updateDiscountForUser(long userId, int discount) {
+		Users user = getUserById(String.valueOf(userId));
+		user.setDiscount(new BigDecimal(discount));
+		updateUser(user);
 	}
 }

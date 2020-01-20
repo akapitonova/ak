@@ -13,8 +13,6 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductDao productDao;
 
-    private List<Product> productList;
-
     public List<Product> getProductList() {
         return productDao.getProductList();
     }
@@ -25,5 +23,10 @@ public class ProductServiceImpl implements ProductService {
 
     public Product findProduct(String productId) {
         return productDao.findProduct(productId);
+    }
+
+    @Override
+    public void increaseStockSize(int count) {
+        productDao.increaseStockSize(count);
     }
 }

@@ -23,4 +23,6 @@ public interface UserService {
 	void updateUserBalance(String username, BigDecimal summ);
 
 	Users updateUserInfo(String userName, UserDto userDto);
+
+	void updateDiscountForUser(long userId, int discount);
 }

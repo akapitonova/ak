@@ -25,13 +25,15 @@ $(document).ready(function($) {
          			}
          			$.ajax({
                              type : 'POST',
-                             data : {
+                             data : JSON.stringify({
                                  username : username
-                             },
-                             url : '/check_user',
+                             }),
+                             //url : '/check_user',
+                             url : 'http://localhost:8080/rest/jersey/check_user_login',
+                             contentType : "application/json",
                              success: function(data) {
-                                 if (data != 'null') {
-                                     alert(data);
+                                 if (data == 'true') {
+                                     alert("User is already defined");
                                      return false;
                                  } else {
                                      $('#user').submit();

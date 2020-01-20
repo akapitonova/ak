@@ -1,6 +1,7 @@
 package com.accenture.flowershop.back.controller;
 
 import com.accenture.flowershop.back.business.service.CustomerOrderService;
+import com.accenture.flowershop.back.business.service.UserMarshallingService;
 import com.accenture.flowershop.back.business.service.UserService;
 import com.accenture.flowershop.back.entity.CustomerOrder;
 import com.accenture.flowershop.back.entity.SessionAttributes;
@@ -8,6 +9,8 @@ import com.accenture.flowershop.back.entity.Users;
 import com.accenture.flowershop.front.dto.CartDto;
 import com.accenture.flowershop.front.dto.UserDto;
 import com.accenture.flowershop.front.enums.Role;
+import com.accenture.flowershop.front.jms.DiscountObject;
+import com.accenture.flowershop.front.jms.Producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +20,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.jms.JMSException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -32,6 +37,12 @@ public class UserController {
 
     @Autowired
     CustomerOrderService customerOrderService;
+
+    @Autowired
+    UserMarshallingService userMarshallingService;
+
+    @Autowired
+    private Producer producer;
 
     @RequestMapping("/login")
     public String login(@RequestParam(value = "error", required = false) String error,
@@ -86,10 +97,17 @@ public class UserController {
 
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
     public String registerUser(@Valid @ModelAttribute(value = "user") Users user, Model model,
-                                   BindingResult result) {
+                                   BindingResult result) throws IOException {
         if (result.hasErrors())
             return "redirect:/register";
         userService.addUser(user);
+        userMarshallingService.convertFromObjectToXML(user, user.getUserName());
+        DiscountObject requestObject = new DiscountObject(user.getId(),4);
+        try {
+            producer.sendMessage(userMarshallingService.convertFromObjectToString(requestObject));
+        } catch (JMSException e) {
+            e.printStackTrace();
+        }
         logger.info("Added user " + user.getId() + " " + user.getUserName());
         model.addAttribute("registrationSuccess", "Registered Successfully. Login using username and password");
         return "redirect:/login";
@@ -97,9 +115,9 @@ public class UserController {
 
     @RequestMapping(value = "/check_user", method = RequestMethod.POST)
     @ResponseBody
-    public String checkUser(@RequestParam(value = "username") String username) {
+    public boolean checkUser(@RequestParam(value = "username") String username) {
         Users user = userService.getUserByUsername(username);
-        return user == null ? "null" : "User is already defined";
+        return user != null ? true : false;
     }
 
     @RequestMapping(value = "/userinfo")

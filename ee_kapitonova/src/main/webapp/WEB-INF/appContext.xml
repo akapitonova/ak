@@ -3,16 +3,23 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:jee="http://www.springframework.org/schema/jee"
 
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/tx
-        http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+        http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+        http://cxf.apache.org/jaxws
+        http://cxf.apache.org/schemas/jaxws.xsd
+        http://www.springframework.org/schema/jee
+        http://www.springframework.org/schema/jee/spring-jee.xsd">
 
     <context:annotation-config/>
 
+    <context:component-scan base-package="com.accenture" />
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/views/"/>
@@ -48,5 +55,16 @@
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory" />
     </bean>
+
+    <bean id="StockWebService" class="com.accenture.flowershop.front.ws.StockWebServiceImpl"/>
+    <jaxws:endpoint id="StockWebService1" implementor="#StockWebService"
+                    address="/StockWebService"/>
+
+    <context:property-placeholder location="classpath:conf.properties"/>
+    <bean id="userMarshallingService" class="com.accenture.flowershop.back.business.service.UserMarshallingService"/>
+
+    <jee:jndi-lookup id="connectionFactory" jndi-name="jms/connectionFactory"/>
+    <jee:jndi-lookup id="inQueue" jndi-name="jms/inQueue"/>
+    <jee:jndi-lookup id="outQueue" jndi-name="jms/outQueue"/>
 
 </beans>
